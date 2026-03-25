@@ -50,18 +50,19 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     if st.button("🏛️ Iniciar Mesa Redonda", use_container_width=True):
         if dolor_cliente and motor_listo:
-            modelo = genai.GenerativeModel('gemini-1.5-flash')
+            # CAMBIO ESTRATÉGICO: Usamos gemini-pro que es universal y no falla en la nube
+            modelo = genai.GenerativeModel('gemini-pro')
             
-            # EL MONITOR DE ESTADO (Los Cartelitos Dinámicos)
+            # EL MONITOR DE ESTADO (Los Cartelitos Dinámicos ahora GIGANTES)
             with st.status("🧠 Iniciando la deliberación en la sombra...", expanded=True) as status:
                 
                 # Paso 1: Apertura
-                st.write("⏳ El Estratega está diagnosticando la estructura...")
+                st.markdown("### ⏳ El Estratega está diagnosticando la estructura...")
                 prompt_1 = f"Actúa como El Estratega. El cliente tiene este dolor: '{dolor_cliente}'. Diagnostica y propón un plan frío y lógico de 3 ejes."
                 plan_inicial = modelo.generate_content(prompt_1).text
                 
                 # Paso 2: Revisión Cruzada
-                st.write("⏳ El Animador y El Vigía están inyectando emoción y revisando riesgos...")
+                st.markdown("### ⏳ El Animador y El Vigía están inyectando emoción y revisando riesgos...")
                 prompt_2 = f"Actúa como El Animador. Lee este plan: '{plan_inicial}'. Critica su frialdad y propón un ángulo emocional."
                 critica_animador = modelo.generate_content(prompt_2).text
                 
@@ -69,17 +70,17 @@ with col2:
                 critica_vigia = modelo.generate_content(prompt_3).text
                 
                 # Paso 3: Defensa
-                st.write("⏳ El Estratega está defendiendo su postura...")
+                st.markdown("### ⏳ El Estratega está defendiendo su postura...")
                 prompt_4 = f"Actúa como El Estratega. Tus colegas dijeron esto. Animador: '{critica_animador}'. Vigía: '{critica_vigia}'. Ajusta tu plan inicial, defiende lo que creas necesario."
                 plan_ajustado = modelo.generate_content(prompt_4).text
                 
                 # Paso 4: Réplica
-                st.write("⏳ Derecho a réplica: Veredicto final de los colegas...")
+                st.markdown("### ⏳ Derecho a réplica: Veredicto final de los colegas...")
                 prompt_5 = f"Actúan como Animador y Vigía. El Estratega ajustó el plan a esto: '{plan_ajustado}'. Den su veredicto final rápido: ¿Aprueban o mantienen objeción?"
                 replica_final = modelo.generate_content(prompt_5).text
                 
                 # Paso 5: Síntesis
-                st.write("⏳ El Sintetizador está redactando el Resumen Ejecutivo final...")
+                st.markdown("### ⏳ El Sintetizador está redactando el Resumen Ejecutivo final...")
                 prompt_6 = f"Actúa como Sintetizador Ejecutivo. Lee este debate final: '{replica_final}' y el plan: '{plan_ajustado}'. Redacta un Resumen Ejecutivo en viñetas para el Director humano."
                 st.session_state.resumen_ejecutivo = modelo.generate_content(prompt_6).text
                 
