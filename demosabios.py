@@ -1,36 +1,14 @@
 import streamlit as st
 import google.generativeai as genai
+import time
 import os
 
-# ==========================================
-# EL CONTADOR GLOBAL DE 7 USOS
-# ==========================================
-ARCHIVO_CONTADOR = "libreta_global.txt"
-LIMITE_USOS = 7
-
-def obtener_usos():
-    if not os.path.exists(ARCHIVO_CONTADOR):
-        return 0
-    with open(ARCHIVO_CONTADOR, "r") as f:
-        try:
-            return int(f.read().strip())
-        except:
-            return 0
-
-def registrar_uso():
-    usos_actuales = obtener_usos()
-    with open(ARCHIVO_CONTADOR, "w") as f:
-        f.write(str(usos_actuales + 1))
-
-usos_realizados = obtener_usos()
-usos_restantes = LIMITE_USOS - usos_realizados
-bloqueado = usos_restantes <= 0
+# Instrucción técnica del Manual Maestro: pip install google-generativeai
 
 # ==========================================
 # CONEXIÓN DEL CEREBRO (LLAVE INVISIBLE)
 # ==========================================
 try:
-    # Intenta buscar la llave en la caja fuerte de Streamlit
     llave = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=llave)
     motor_listo = True
@@ -38,109 +16,95 @@ except:
     motor_listo = False
 
 # ==========================================
-# CONFIGURACIÓN Y ESTILO VISUAL
+# CONFIGURACIÓN Y ESTILO VISUAL LIMPIO
 # ==========================================
-st.set_page_config(page_title="Demo: El Trono del Arquitecto", layout="wide")
+st.set_page_config(page_title="El Trono del Arquitecto - Mesa Redonda", layout="wide")
 
 st.markdown("""
 <style>
-div.stTextArea textarea, 
-div[data-baseweb="textarea"] textarea {
-    font-size: 32px !important;  
-    font-weight: 900 !important; 
-    font-style: italic !important; 
-    color: #000000 !important;   
-    line-height: 1.5 !important;
-}
-div.stButton > button:first-child {
-    background-color: #f0f8ff; 
-    border: 2px solid #a8cfee;
-    color: #004a99;
-    font-weight: bold;
-    transform: scale(1.03); 
-    font-size: 20px !important; 
-}
-div.stButton > button:first-child:hover {
-    background-color: #d8e6f1;
-    border: 2px solid #8ab1d4;
+div.stTextArea textarea {
+    font-size: 24px !important;  
+    font-weight: bold !important; 
+    line-height: 1.4 !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# Inicializar memoria para que el resultado no se borre
-if 'resultado_sabios' not in st.session_state:
-    st.session_state.resultado_sabios = ""
-
-# ==========================================
-# PANEL DE CONTROL
-# ==========================================
-with st.sidebar:
-    st.markdown("## ⚙️ Estado del Sistema")
-    st.markdown("---")
-    
-    if bloqueado:
-        st.error("🛑 SESIÓN FINALIZADA")
-        st.write("Se han consumido los 7 tokens.")
-    else:
-        st.success("🟢 SISTEMA ACTIVO")
-        st.write(f"**Tokens restantes:** {usos_restantes} de {LIMITE_USOS}")
-        
-    st.markdown("---")
-    if not motor_listo:
-        st.warning("⚠️ Falta conectar la Llave en la Bóveda")
+# Memoria de la sesión para mantener la pantalla limpia
+if 'resumen_ejecutivo' not in st.session_state:
+    st.session_state.resumen_ejecutivo = ""
+if 'debate_completado' not in st.session_state:
+    st.session_state.debate_completado = False
 
 # ==========================================
 # INTERFAZ PRINCIPAL
 # ==========================================
-st.markdown("# 🏛️ El Trono del Arquitecto (Versión Demo)")
-st.markdown("### *Mesa de los Sabios: Inteligencia Colectiva Soberana*")
+st.markdown("# 🏛️ El Trono del Arquitecto")
+st.markdown("### *Dinámica 2: La Mesa Redonda de los Sabios*")
 st.markdown("---")
 
-st.markdown("## 🎯 EL DOLOR / DIFICULTAD DEL CLIENTE (¡CRÍTICO!)")
-dolor_cliente = st.text_area("", height=200, disabled=bloqueado)
+st.markdown("## 🎯 EL DOLOR / DIFICULTAD DEL CLIENTE")
+dolor_cliente = st.text_area("", height=150, placeholder="Escriba aquí la situación del cliente...")
 
-st.markdown("---")
-st.markdown("# 📦 ENTREGABLES DE EL CONSTRUCTOR")
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    if st.button("🏛️ Iniciar Mesa Redonda", use_container_width=True):
+        if dolor_cliente and motor_listo:
+            modelo = genai.GenerativeModel('gemini-1.5-flash')
+            
+            # EL MONITOR DE ESTADO (Los Cartelitos Dinámicos)
+            with st.status("🧠 Iniciando la deliberación en la sombra...", expanded=True) as status:
+                
+                # Paso 1: Apertura
+                st.write("⏳ El Estratega está diagnosticando la estructura...")
+                prompt_1 = f"Actúa como El Estratega. El cliente tiene este dolor: '{dolor_cliente}'. Diagnostica y propón un plan frío y lógico de 3 ejes."
+                plan_inicial = modelo.generate_content(prompt_1).text
+                
+                # Paso 2: Revisión Cruzada
+                st.write("⏳ El Animador y El Vigía están inyectando emoción y revisando riesgos...")
+                prompt_2 = f"Actúa como El Animador. Lee este plan: '{plan_inicial}'. Critica su frialdad y propón un ángulo emocional."
+                critica_animador = modelo.generate_content(prompt_2).text
+                
+                prompt_3 = f"Actúa como El Vigía. Lee este plan: '{plan_inicial}'. Señala riesgos éticos o de marca."
+                critica_vigia = modelo.generate_content(prompt_3).text
+                
+                # Paso 3: Defensa
+                st.write("⏳ El Estratega está defendiendo su postura...")
+                prompt_4 = f"Actúa como El Estratega. Tus colegas dijeron esto. Animador: '{critica_animador}'. Vigía: '{critica_vigia}'. Ajusta tu plan inicial, defiende lo que creas necesario."
+                plan_ajustado = modelo.generate_content(prompt_4).text
+                
+                # Paso 4: Réplica
+                st.write("⏳ Derecho a réplica: Veredicto final de los colegas...")
+                prompt_5 = f"Actúan como Animador y Vigía. El Estratega ajustó el plan a esto: '{plan_ajustado}'. Den su veredicto final rápido: ¿Aprueban o mantienen objeción?"
+                replica_final = modelo.generate_content(prompt_5).text
+                
+                # Paso 5: Síntesis
+                st.write("⏳ El Sintetizador está redactando el Resumen Ejecutivo final...")
+                prompt_6 = f"Actúa como Sintetizador Ejecutivo. Lee este debate final: '{replica_final}' y el plan: '{plan_ajustado}'. Redacta un Resumen Ejecutivo en viñetas para el Director humano."
+                st.session_state.resumen_ejecutivo = modelo.generate_content(prompt_6).text
+                
+                status.update(label="✅ Debate concluido. Pantalla lista.", state="complete", expanded=False)
+            
+            st.session_state.debate_completado = True
+            st.rerun()
 
-if bloqueado:
-    st.warning("⚠️ Límite de demostración alcanzado. Contacte al Arquitecto.")
-else:
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown("### 👉 RUTA PRINCIPAL")
-        if st.button("🛠️ Generar Prompt (Consumir 1 Token)"):
-            if dolor_cliente:
-                registrar_uso()
-                with st.spinner("🧠 Los Sabios están deliberando..."):
-                    if motor_listo:
-                        try:
-                            # Aquí respira el verdadero cerebro
-                            modelo = genai.GenerativeModel('gemini-1.5-flash')
-                            instruccion = f"Actúa como un equipo de consultores expertos. El cliente tiene este dolor comercial: '{dolor_cliente}'. Escribe un análisis brillante y un Prompt para solucionar su problema."
-                            respuesta = modelo.generate_content(instruccion)
-                            st.session_state.resultado_sabios = respuesta.text
-                        except Exception as e:
-                            st.session_state.resultado_sabios = f"Error de conexión: {e}"
-                    else:
-                        st.session_state.resultado_sabios = "El motor está apagado. Falta la llave en la bóveda."
-                st.rerun() 
-            else:
-                st.warning("⚠️ Maestro, escriba un dolor primero.")
-    with col2:
-        st.markdown("### 👉 RUTA TÉCNICA")
-        st.button("🐍 Código Python (Desactivado)")
-    with col3:
-        st.markdown("### 👉 RUTA VISUAL")
-        st.button("🌐 Código HTML (Desactivado)")
+        elif not motor_listo:
+            st.error("Falta conectar la llave del motor.")
+        else:
+            st.warning("Por favor, escriba el dolor del cliente.")
 
 # ==========================================
-# ESPACIO DE LECTURA (¡LO QUE FALTABA!)
+# EL ESPACIO DE LECTURA (SOBERANÍA DEL CONSULTOR)
 # ==========================================
-st.markdown("---")
-st.markdown("# 🔍 Resultados de la Mesa de los Sabios")
-
-# Aquí es donde aparecerá el diálogo
-if st.session_state.resultado_sabios:
-    st.info(st.session_state.resultado_sabios)
-else:
-    st.markdown("*(El análisis de los Sabios aparecerá aquí abajo de forma inminente tras consumir un token...)*")
+if st.session_state.debate_completado:
+    st.markdown("---")
+    st.markdown("## 📜 Resumen Ejecutivo de los Sabios")
+    st.info(st.session_state.resumen_ejecutivo)
+    
+    st.markdown("### ⚙️ Control de Mando")
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.button("✅ Aprobar y Construir Prompt Final (Próximamente)")
+    with col_b:
+        st.text_input("✋ Exigir Cambios a la Mesa:", placeholder="Ej: Que el Animador sea más formal...")
+        st.button("🔄 Reenviar al Debate")
