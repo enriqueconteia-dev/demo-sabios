@@ -1,0 +1,6 @@
+streamlit
+openai
+elevenlabs
+SpeechRecognition
+audio-recorder-streamlit
+google-generativeai
