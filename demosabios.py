@@ -1,10 +1,8 @@
 import streamlit as st
 import google.generativeai as genai
 
-# CONFIGURACIÓN DE PÁGINA
 st.set_page_config(page_title="Mesa de los Sabios", layout="wide")
 
-# CONEXIÓN DEL MOTOR
 try:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
     modelo = genai.GenerativeModel('gemini-1.5-flash')
@@ -12,21 +10,11 @@ try:
 except:
     motor_listo = False
 
-# ESTILO DE LETRA GIGANTE
-st.markdown("""
-<style>
-    div.stTextArea textarea { font-size: 25px !important; font-weight: bold !important; color: #1E3A8A !important; }
-    h1 { font-size: 50px !important; }
-    h3 { font-size: 30px !important; }
-    .stButton>button { height: 3em; font-size: 25px !important; font-weight: bold !important; }
-</style>
-""", unsafe_allow_html=True)
+st.markdown("<style>div.stTextArea textarea { font-size: 25px !important; font-weight: bold !important; } h1 { font-size: 50px !important; } .stButton>button { height: 3em; font-size: 25px !important; }</style>", unsafe_allow_html=True)
 
-# INTERFAZ
 st.markdown("# 🏛️ La Mesa Redonda de los Sabios")
 st.markdown("---")
-st.markdown("### 🎯 ESCRIBA EL DOLOR DEL CLIENTE AQUÍ:")
-dolor = st.text_area("", height=200, placeholder="Describa la situación...")
+dolor = st.text_area("🎯 ESCRIBA EL DOLOR DEL CLIENTE AQUÍ:", height=200)
 
 if st.button("🏛️ INICIAR EL DEBATE DE LOS SABIOS", use_container_width=True):
     if dolor and motor_listo:
@@ -40,3 +28,5 @@ if st.button("🏛️ INICIAR EL DEBATE DE LOS SABIOS", use_container_width=True
         aviso.empty()
         st.markdown("## 📜 RESUMEN EJECUTIVO FINAL")
         st.info(final)
+    else:
+        st.error("Por favor escriba el dolor del cliente.")
