@@ -1,32 +1,43 @@
 import streamlit as st
 import google.generativeai as genai
+import os
 
-st.set_page_config(page_title="Mesa de los Sabios", layout="wide")
+# Configuración de la página para maximizar el espacio de lectura
+st.set_page_config(page_title="Mesa de los Sabios", layout="centered")
 
+# Configuración de la API (Asumiendo que la clave está configurada en los secrets de Streamlit)
+# Si usa otra forma de poner la clave, reemplácela aquí.
 try:
-    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-    modelo = genai.GenerativeModel('gemini-1.5-flash')
-    motor_listo = True
-except:
-    motor_listo = False
+    API_KEY = st.secrets["GEMINI_API_KEY"]
+    genai.configure(api_key=API_KEY)
+except Exception:
+    st.warning("Falta configurar la clave de API de Google (GEMINI_API_KEY) en los Secrets de Streamlit.")
 
-st.markdown("<style>div.stTextArea textarea { font-size: 25px !important; font-weight: bold !important; } h1 { font-size: 50px !important; } .stButton>button { height: 3em; font-size: 25px !important; }</style>", unsafe_allow_html=True)
+# Títulos de la aplicación
+st.title("🏛️ Trono del Arquitecto")
+st.header("Mesa de los Sabios")
 
-st.markdown("# 🏛️ La Mesa Redonda de los Sabios")
-st.markdown("---")
-dolor = st.text_area("🎯 ESCRIBA EL DOLOR DEL CLIENTE AQUÍ:", height=200)
+# Área de entrada para el usuario
+st.markdown("**Escribe aquí tu tema o pregunta para los Sabios:**")
+consulta = st.text_area("", height=150, label_visibility="collapsed")
 
-if st.button("🏛️ INICIAR EL DEBATE DE LOS SABIOS", use_container_width=True):
-    if dolor and motor_listo:
-        aviso = st.empty()
-        aviso.info("## 🧠 1/3: El Estratega está analizando...")
-        res1 = modelo.generate_content(f"Actúa como Estratega. Plan para: {dolor}").text
-        aviso.warning("## 🎭 2/3: El Animador y el Vigía debaten...")
-        res2 = modelo.generate_content(f"Analiza este plan: {res1}").text
-        aviso.success("## ✍️ 3/3: El Sintetizador redacta el final...")
-        final = modelo.generate_content(f"Resumen ejecutivo final de: {res2}").text
-        aviso.empty()
-        st.markdown("## 📜 RESUMEN EJECUTIVO FINAL")
-        st.info(final)
+# Botón de acción
+if st.button("Convocar a los Sabios"):
+    if consulta:
+        with st.spinner("Los Sabios están deliberando..."):
+            try:
+                # Llamada al modelo de IA
+                model = genai.GenerativeModel('gemini-1.5-pro')
+                respuesta = model.generate_content(consulta)
+                
+                # Línea separadora sutil
+                st.divider()
+                
+                # Espacio limpio y prioritario para la lectura de la respuesta
+                st.markdown("### 📜 El Veredicto de los Sabios")
+                st.write(respuesta.text)
+                
+            except Exception as e:
+                st.error(f"Hubo un error en la comunicación con los Sabios: {e}")
     else:
-        st.error("Por favor escriba el dolor del cliente.")
+        st.warning("Por favor, escribe una consulta antes de convocar a los Sabios.")
